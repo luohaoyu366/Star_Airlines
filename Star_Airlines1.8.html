@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日签到积分系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .current-info {
+            text-align: right;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f8f8;
+            border-radius: 4px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .panel {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .points-info {
+            background-color: #f0f8ff;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .points-info h3 {
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+
+        .bonus-info {
+            color: #4CAF50;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .checkin-status {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 4px;
+        }
+
+        .points-history {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .points-history-item {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        /* 商城样式 */
+        .shop-info {
+            background: #f8f8f8;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-points {
+            font-size: 1.2em;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .product-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background: #f5f5f5;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-points {
+            color: #e44d26;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .product-stock {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        /* 背包样式 */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .inventory-item {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: white;
+            transition: transform 0.2s;
+        }
+
+        .inventory-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .item-info {
+            margin-bottom: 10px;
+        }
+
+        .item-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .use-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .use-btn:hover {
+            background: #45a049;
+        }
+
+        /* 管理后台样式 */
+        .admin-tabs {
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #4CAF50;
+            color: #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .usage-record {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .usage-time {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .usage-details {
+            margin-top: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #f5f5f5;
+        }
+
+        /* 积分管理样式 */
+        .points-action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .points-action-btn.add {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .points-action-btn.subtract {
+            background: #f44336;
+            color: white;
+        }
+
+        .points-action-btn.history {
+            background: #2196F3;
+            color: white;
+        }
+
+        .points-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .points-history-table th,
+        .points-history-table td {
+            padding: 8px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        .points-history-table th {
+            background-color: #f5f5f5;
+        }
+
+        .points-history-modal {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+
+        .points-history-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 背包管理样式 */
+        .inventory-action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+        }
+
+        .inventory-action-btn.remove {
+            background: #f44336;
+        }
+
+        /* 会员管理样式 */
+        .membership-info {
+            margin: 15px 0;
+            padding: 10px;
+            background: #e0f7fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .membership-info h3 {
+            color: #00796b;
+            margin-bottom: 10px;
+        }
+
+        .membership-list {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .membership-list-item {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="current-info">
+            <div id="currentTime">当前时间：2025-02-10 06:08:10</div>
+            <div id="currentUser">当前用户：luohaoyu366</div>
+        </div>
+
+        <div class="header">
+            <h1>每日签到积分系统</h1>
+        </div>
+
+        <div class="nav">
+            <button onclick="showPanel('login')" id="loginBtn">登录</button>
+            <button onclick="showPanel('register')" id="registerBtn">注册</button>
+            <button onclick="showPanel('checkin')" id="checkinBtn" style="display: none;">签到</button>
+            <button onclick="showPanel('shop')" id="shopBtn" style="display: none;">积分商城</button>
+            <button onclick="showPanel('inventory')" id="inventoryBtn" style="display: none;">我的背包</button>
+            <button onclick="showPanel('profile')" id="profileBtn" style="display: none;">个人中心</button>
+            <button onclick="showPanel('admin')" id="adminBtn" style="display: none;">管理后台</button>
+            <button onclick="showPanel('membership')" id="membershipBtn" style="display: none;">会员管理</button>
+            <button onclick="logout()" id="logoutBtn" style="display: none;">退出</button>
+        </div>
+
+        <!-- 登录面板 -->
+        <div id="loginPanel" class="panel">
+            <h2>用户登录</h2>
+            <div class="form-group">
+                <label>用户名：</label>
+                <input type="text" id="loginUsername">
+            </div>
+            <div class="form-group">
+                <label>密码：</label>
+                <input type="password" id="loginPassword">
+            </div>
+            <button onclick="login()">登录</button>
+        </div>
+
+        <!-- 注册面板 -->
+        <div id="registerPanel" class="panel">
+            <h2>用户注册</h2>
+            <div class="form-group">
+                <label>用户名：</label>
+                <input type="text" id="regUsername">
+            </div>
+            <div class="form-group">
+                <label>密码：</label>
+                <input type="password" id="regPassword">
+            </div>
+            <div class="form-group">
+                <label>确认密码：</label>
+                <input type="password" id="regPasswordConfirm">
+            </div>
+            <div class="form-group">
+                <label>邮箱：</label>
+                <input type="email" id="regEmail">
+            </div>
+            <button onclick="register()">注册</button>
+        </div>
+
+        <!-- 签到面板 -->
+        <div id="checkinPanel" class="panel">
+            <h2>每日签到</h2>
+            <div class="points-info">
+                <h3>积分规则</h3>
+                <p>每日签到：+10积分</p>
+                <p>连续签到3天：额外 +20积分</p>
+                <div id="currentPoints" class="bonus-info">当前积分：0</div>
+                <div id="streakBonus" class="bonus-info"></div>
+            </div>
+            <div class="checkin-status" id="checkinStatus">未登录</div>
+            <button onclick="checkin()" id="doCheckinBtn">签到</button>
+            <div class="streak-info" id="streakInfo"></div>
+            <div class="points-history">
+                <h3>积分历史记录</h3>
+                <div id="pointsHistory"></div>
+            </div>
+        </div>
+
+        <!-- 积分商城面板 -->
+        <div id="shopPanel" class="panel">
+            <h2>积分商城</h2>
+            <div class="shop-info">
+                <div class="user-points">我的积分：<span id="shopUserPoints">0</span></div>
+                <div id="currentDiscount"></div>
+            </div>
+            <div class="shop-grid" id="shopItems"></div>
+        </div>
+
+        <!-- 背包面板 -->
+        <div id="inventoryPanel" class="panel">
+            <h2>我的背包</h2>
+            <div class="inventory-grid" id="inventoryItems"></div>
+        </div>
+
+        <!-- 个人中心面板 -->
+        <div id="profilePanel" class="panel">
+            <h2>个人中心</h2>
+            <div id="userInfo"></div>
+            <div class="form-group">
+                <h3>修改密码</h3>
+                <label>原密码：</label>
+                <input type="password" id="oldPassword">
+                <label>新密码：</label>
+                <input type="password" id="newPassword">
+                <label>确认新密码：</label>
+                <input type="password" id="confirmNewPassword">
+                <button onclick="changePassword()">修改密码</button>
+            </div>
+        </div>
+
+        <!-- 管理后台面板 -->
+        <div id="adminPanel" class="panel">
+            <h2>管理后台</h2>
+            <div class="admin-tabs">
+                <button onclick="switchAdminTab('users')" class="tab-btn active">用户管理</button>
+                <button onclick="switchAdminTab('products')" class="tab-btn">商品管理</button>
+                <button onclick="switchAdminTab('discount')" class="tab-btn">优惠活动</button>
+                <button onclick="switchAdminTab('usage')" class="tab-btn">使用记录</button>
+                <button onclick="switchAdminTab('data')" class="tab-btn">导入导出</button>
+            </div>
+            
+            <div id="userList" class="tab-content active"></div>
+            
+            <div id="productsManagement" class="tab-content">
+                <button onclick="showAddProductForm()" class="admin-btn">添加商品</button>
+                <div id="productsList"></div>
+            </div>
+            
+            <div id="discountManagement" class="tab-content">
+                <div class="form-group">
+                    <h3>设置折扣</h3>
+                    <label>折扣比例（%）：</label>
+                    <input type="number" id="discountRate" min="1" max="100" value="100">
+                    <label>有效期至：</label>
+                    <input type="datetime-local" id="discountEndTime">
+                    <button onclick="setDiscount()">设置折扣</button>
+                </div>
+            </div>
+
+            <div id="usageRecords" class="tab-content">
+                <div id="usageList"></div>
+            </div>
+            
+            <div id="dataManagement" class="tab-content">
+                <button onclick="exportData()">导出数据</button>
+                <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+            </div>
+        </div>
+
+        <!-- 会员管理面板 -->
+        <div id="membershipPanel" class="panel">
+            <h2>会员管理</h2>
+            <div class="membership-info">
+                <h3>会员信息</h3>
+                <p>选择您的会员等级：</p>
+                <button onclick="becomeMember('普通会员', 1000)">普通会员（1000积分）</button>
+                <button onclick="becomeMember('黄金会员', 3000)">黄金会员（3000积分）</button>
+                <button onclick="becomeMember('钻石会员', 5000)">钻石会员（5000积分）</button>
+            </div>
+            <div class="membership-list">
+                <h3>会员列表</h3>
+                <div id="membershipList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 当前时间和用户
+        let currentTime = "2025-02-10 06:08:10";
+        let currentUsername = "luohaoyu366";
+
+        // 用户数据
+        let users = [
+            {
+                username: 'admin',
+                password: 'admin123',
+                email: 'admin@example.com',
+                                isAdmin: true,
+                membershipLevel: '',
+                checkins: [],
+                streak: 0,
+                points: 0,
+                pointsHistory: [],
+                exchanges: [],
+                inventory: [],
+                usageRecords: []
+            }
+        ];
+
+        let currentUser = null;
+
+        // 商品数据
+        let products = [
+            {
+                id: 1,
+                name: "优惠券-10元",
+                description: "可用于商城消费",
+                points: 100,
+                stock: 100,
+                image: "voucher.jpg"
+            },
+            {
+                id: 2,
+                name: "精美徽章",
+                description: "限量版纪念徽章",
+                points: 50,
+                stock: 50,
+                image: "badge.jpg"
+            }
+        ];
+
+        // 折扣信息
+        let currentDiscount = {
+            rate: 100,
+            endTime: null
+        };
+
+        // 全局使用记录
+        let globalUsageRecords = [];
+
+        // 积分规则配置
+        const POINTS_CONFIG = {
+            DAILY_CHECKIN: 10,
+            STREAK_3_DAYS: 20
+        };
+
+        // 显示面板
+        function showPanel(panelName) {
+            document.querySelectorAll('.panel').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            document.getElementById(panelName + 'Panel').style.display = 'block';
+
+            if (panelName === 'admin' && currentUser?.isAdmin) {
+                updateUserList();
+            } else if (panelName === 'shop') {
+                displayProducts();
+            } else if (panelName === 'inventory') {
+                displayInventory();
+            } else if (panelName === 'profile') {
+                updateUserInfo();
+            } else if (panelName === 'membership') {
+                updateMembershipList();
+            }
+        }
+
+        // 登录功能
+        function login() {
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+            if (user) {
+                currentUser = user;
+                if (!currentUser.points) currentUser.points = 0;
+                if (!currentUser.pointsHistory) currentUser.pointsHistory = [];
+                if (!currentUser.inventory) currentUser.inventory = [];
+                if (!currentUser.usageRecords) currentUser.usageRecords = [];
+                if (!currentUser.exchanges) currentUser.exchanges = [];
+                
+                updateNavigation();
+                updateTimeDisplay();
+                showPanel('checkin');
+                updateCheckinStatus();
+                alert('登录成功！');
+            } else {
+                alert('用户名或密码错误！');
+            }
+        }
+
+        // 注册功能
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+            const email = document.getElementById('regEmail').value;
+
+            if (!username || !password || !email) {
+                alert('请填写所有必填项！');
+                return;
+            }
+
+            if (password !== passwordConfirm) {
+                alert('两次输入的密码不一致！');
+                return;
+            }
+
+            if (users.some(u => u.username === username)) {
+                alert('用户名已存在！');
+                return;
+            }
+
+            users.push({
+                username,
+                password,
+                email,
+                isAdmin: false,
+                membershipLevel: '',
+                checkins: [],
+                streak: 0,
+                points: 0,
+                pointsHistory: [],
+                exchanges: [],
+                inventory: [],
+                usageRecords: []
+            });
+
+            alert('注册成功！请登录');
+            showPanel('login');
+        }
+
+        // 签到功能
+        function checkin() {
+            if (!currentUser) {
+                alert('请先登录！');
+                return;
+            }
+
+            const today = currentTime.split(' ')[0];
+            if (currentUser.checkins.includes(today)) {
+                alert('今天已经签到过了！');
+                return;
+            }
+
+            // 记录签到
+            currentUser.checkins.push(today);
+            
+            // 计算积分
+            let earnedPoints = POINTS_CONFIG.DAILY_CHECKIN;
+            let bonusMessage = '';
+            
+            // 更新连续签到天数
+            updateStreak();
+            
+            // 检查是否达到连续签到3天
+            if (currentUser.streak === 3) {
+                earnedPoints += POINTS_CONFIG.STREAK_3_DAYS;
+                bonusMessage = '恭喜获得连续签到3天奖励：+20积分！';
+            }
+
+            // 更新积分
+            currentUser.points += earnedPoints;
+            
+            // 记录积分历史
+            currentUser.pointsHistory.unshift({
+                date: today,
+                points: earnedPoints,
+                type: bonusMessage ? '连续签到奖励' : '每日签到',
+                message: bonusMessage || '每日签到奖励'
+            });
+
+            // 保持历史记录最多显示10条
+            if (currentUser.pointsHistory.length > 10) {
+                currentUser.pointsHistory.pop();
+            }
+
+            updateCheckinStatus();
+            updatePointsDisplay();
+
+            let message = `签到成功！获得${earnedPoints}积分`;
+            if (bonusMessage) {
+                message += '\n' + bonusMessage;
+            }
+            alert(message);
+        }
+
+        // 显示商品列表
+        function displayProducts() {
+            const shopItems = document.getElementById('shopItems');
+            shopItems.innerHTML = '';
+            
+            products.forEach(product => {
+                const discountedPoints = Math.floor(product.points * (currentDiscount.rate / 100));
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                card.innerHTML = `
+                    <div class="product-image" style="background-color: #f0f0f0; text-align: center; line-height: 150px;">
+                        ${product.name}
+                    </div>
+                    <div class="product-info">
+                        <div class="product-title">${product.name}</div>
+                        <div class="product-description">${product.description}</div>
+                        <div class="product-points">
+                            ${currentDiscount.rate < 100 ? 
+                                `<del>${product.points}</del> ${discountedPoints}` : 
+                                discountedPoints} 积分
+                        </div>
+                        <div class="product-stock">库存: ${product.stock}</div>
+                        <button 
+                            onclick="exchangeProduct(${product.id})" 
+                            class="exchange-btn"
+                            ${(product.stock <= 0 || !currentUser || currentUser.points < discountedPoints) ? 'disabled' : ''}
+                        >
+                            ${product.stock <= 0 ? '已售罄' : '立即兑换'}
+                        </button>
+                    </div>
+                `;
+                
+                shopItems.appendChild(card);
+            });
+            
+            // 更新用户积分显示
+            document.getElementById('shopUserPoints').textContent = currentUser ? currentUser.points : 0;
+            
+            // 更新折扣信息显示
+            updateDiscountDisplay();
+        }
+
+        // 兑换商品
+        function exchangeProduct(productId) {
+            if (!currentUser) {
+                alert('请先登录！');
+                return;
+            }
+            
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                alert('商品不存在！');
+                return;
+            }
+            
+            const discountedPoints = Math.floor(product.points * (currentDiscount.rate / 100));
+            
+            if (currentUser.points < discountedPoints) {
+                alert('积分不足！');
+                return;
+            }
+            
+            if (product.stock <= 0) {
+                alert('商品已售罄！');
+                return;
+            }
+            
+            if (confirm(`确定要使用 ${discountedPoints} 积分兑换 ${product.name} 吗？`)) {
+                // 扣除积分
+                currentUser.points -= discountedPoints;
+                
+                // 减少库存
+                product.stock--;
+                
+                // 添加到背包
+                const inventoryItem = {
+                    id: Date.now(),
+                    productId: product.id,
+                    name: product.name,
+                    description: product.description,
+                    acquireTime: currentTime,
+                    status: 'unused' // unused 或 used
+                };
+                
+                currentUser.inventory.push(inventoryItem);
+                
+                // 记录兑换
+                const exchange = {
+                    productId,
+                    productName: product.name,
+                    points: discountedPoints,
+                    date: currentTime
+                };
+                
+                currentUser.exchanges.push(exchange);
+                
+                alert('兑换成功！物品已放入背包');
+                displayProducts();
+                updatePointsDisplay();
+            }
+        }
+
+        // 显示背包
+        function displayInventory() {
+            if (!currentUser) return;
+            
+            const inventoryItems = document.getElementById('inventoryItems');
+            inventoryItems.innerHTML = '';
+            
+            const unusedItems = currentUser.inventory.filter(item => item.status === 'unused');
+            
+            if (unusedItems.length === 0) {
+                inventoryItems.innerHTML = '<p style="text-align: center;">背包是空的</p>';
+                return;
+            }
+            
+            unusedItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'inventory-item';
+                itemDiv.innerHTML = `
+                    <div class="item-info">
+                        <h3>${item.name}</h3>
+                        <p>${item.description}</p>
+                        <p style="color: #666;">获得时间：${item.acquireTime}</p>
+                    </div>
+                    <div class="item-actions">
+                        <button onclick="useItem(${item.id})" class="use-btn">使用</button>
+                    </div>
+                `;
+                inventoryItems.appendChild(itemDiv);
+            });
+        }
+
+        // 使用物品
+        function useItem(itemId) {
+            if (!currentUser) return;
+            
+            const item = currentUser.inventory.find(i => i.id === itemId);
+            if (!item || item.status === 'used') {
+                alert('物品不存在或已被使用！');
+                return;
+            }
+            
+            if (confirm(`确定要使用 ${item.name} 吗？`)) {
+                item.status = 'used';
+                item.useTime = currentTime;
+                
+                // 记录使用
+                const usageRecord = {
+                    itemId,
+                    itemName: item.name,
+                    username: currentUser.username,
+                    useTime: currentTime,
+                    details: `使用了 ${item.name}`
+                };
+                
+                currentUser.usageRecords.push(usageRecord);
+                globalUsageRecords.push(usageRecord);
+                
+                alert('使用成功！');
+                displayInventory();
+            }
+        }
+
+        // 显示使用记录
+        function displayUsageRecords() {
+            if (!currentUser?.isAdmin) return;
+            
+            const usageList = document.getElementById('usageList');
+            usageList.innerHTML = '<h3>物品使用记录</h3>';
+            
+            if (globalUsageRecords.length === 0) {
+                usageList.innerHTML += '<p>暂无使用记录</p>';
+                return;
+            }
+            
+            globalUsageRecords.sort((a, b) => new Date(b.useTime) - new Date(a.useTime))
+                .forEach(record => {
+                    usageList.innerHTML += `
+                        <div class="usage-record">
+                            <div class="usage-time">${record.useTime}</div>
+                            <div class="usage-details">
+                                用户 ${record.username} ${record.details}
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        // 切换管理后台标签
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`[onclick="switchAdminTab('${tab}')"]`).classList.add('active');
+            
+            if (tab === 'users') {
+                document.getElementById('userList').classList.add('active');
+                updateUserList();
+            } else if (tab === 'products') {
+                document.getElementById('productsManagement').classList.add('active');
+                updateProductsList();
+            } else if (tab === 'discount') {
+                document.getElementById('discountManagement').classList.add('active');
+            } else if (tab === 'usage') {
+                document.getElementById('usageRecords').classList.add('active');
+                displayUsageRecords();
+            } else if (tab === 'data') {
+                document.getElementById('dataManagement').classList.add('active');
+            }
+        }
+
+        // 更新用户列表 (修改现有函数)
+        function updateUserList() {
+            if (!currentUser?.isAdmin) return;
+
+            const userList = document.getElementById('userList');
+            userList.innerHTML = '<h3>用户管理</h3><table>' +
+                '<tr>' +
+                '<th>用户名</th>' +
+                '<th>邮箱</th>' +
+                '<th>当前积分</th>' +
+                '<th>连续签到</th>' +
+                '<th>积分操作</th>' +
+                '<th>背包操作</th>' +
+                '<th>会员操作</th>' +
+                '<th>用户操作</th>' +
+                '</tr>';
+            
+            users.forEach(user => {
+                if (user.username !== 'admin') {
+                    userList.innerHTML += `
+                        <tr>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td id="points-${user.username}">${user.points || 0}</td>
+                            <td>${user.streak || 0}天</td>
+                            <td>
+                                <button onclick="modifyUserPoints('${user.username}', 'add')" class="points-action-btn add">增加积分</button>
+                                <button onclick="modifyUserPoints('${user.username}', 'subtract')" class="points-action-btn subtract">减少积分</button>
+                                <button onclick="showPointsHistory('${user.username}')" class="points-action-btn history">查看记录</button>
+                            </td>
+                            <td>
+                                <button onclick="addItemToInventory('${user.username}')" class="inventory-action-btn">增加物品</button>
+                                <button onclick="removeItemFromInventory('${user.username}')" class="inventory-action-btn remove">删除物品</button>
+                            </td>
+                            <td>
+                                <button onclick="toggleMembership('${user.username}')" class="inventory-action-btn">${user.membershipLevel ? '取消会员' : '设为会员'}</button>
+                            </td>
+                            <td>
+                                <button onclick="deleteUser('${user.username}')">删除</button>
+                                <button onclick="resetUserPassword('${user.username}')">重置密码</button>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            userList.innerHTML += '</table>';
+        }
+
+        // 添加新的积分管理相关函数
+        function modifyUserPoints(username, action) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+
+            const user = users.find(u => u.username === username);
+            if (!user) {
+                alert('用户不存在！');
+                return;
+            }
+
+            const amount = parseInt(prompt(`请输入要${action === 'add' ? '增加' : '减少'}的积分数量：`));
+            if (isNaN(amount) || amount <= 0) {
+                alert('请输入有效的积分数量！');
+                return;
+            }
+
+            if (action === 'subtract' && user.points < amount) {
+                alert('用户积分不足，无法扣减！');
+                return;
+            }
+
+            const oldPoints = user.points;
+            user.points = action === 'add' ? (user.points + amount) : (user.points - amount);
+
+            // 记录积分变动历史
+            user.pointsHistory = user.pointsHistory || [];
+            user.pointsHistory.unshift({
+                date: currentTime,
+                points: action === 'add' ? amount : -amount,
+                type: '管理员操作',
+                message: `管理员${action === 'add' ? '增加' : '减少'}积分`,
+                oldPoints: oldPoints,
+                newPoints: user.points,
+                operator: currentUser.username
+            });
+
+            // 更新显示
+            document.getElementById(`points-${username}`).textContent = user.points;
+            alert(`操作成功！${username} 的积分已${action === 'add' ? '增加' : '减少'} ${amount} 点`);
+        }
+
+        function showPointsHistory(username) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+
+            const user = users.find(u => u.username === username);
+            if (!user || !user.pointsHistory) {
+                alert('没有找到该用户的积分记录！');
+                return;
+            }
+
+            let historyHtml = `
+                <div class="points-history-overlay">
+                    <div class="points-history-modal">
+                        <h3>${username} 的积分记录</h3>
+                        <table class="points-history-table">
+                            <tr>
+                                <th>时间</th>
+                                <th>类型</th>
+                                <th>变动</th>
+                                <th>原积分</th>
+                                <th>现积分</th>
+                                <th>操作人</th>
+                                <th>备注</th>
+                            </tr>
+            `;
+
+            user.pointsHistory.forEach(record => {
+                historyHtml += `
+                    <tr>
+                        <td>${record.date}</td>
+                        <td>${record.type}</td>
+                        <td style="color: ${record.points >= 0 ? 'green' : 'red'}">
+                            ${record.points >= 0 ? '+' : ''}${record.points}
+                        </td>
+                        <td>${record.oldPoints}</td>
+                        <td>${record.newPoints}</td>
+                        <td>${record.operator || '-'}</td>
+                        <td>${record.message}</td>
+                    </tr>
+                `;
+            });
+
+            historyHtml += `
+                        </table>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="this.parentElement.parentElement.remove()">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.innerHTML = historyHtml;
+            document.body.appendChild(overlay);
+
+            // 点击遮罩层关闭
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    overlay.remove();
+                }
+            });
+        }
+
+        // 背包管理相关函数
+        function addItemToInventory(username) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+
+            const user = users.find(u => u.username === username);
+            if (!user) {
+                alert('用户不存在！');
+                return;
+            }
+
+            const itemName = prompt('请输入物品名称：');
+            const itemDescription = prompt('请输入物品描述：');
+
+            if (!itemName || !itemDescription) {
+                                alert('物品名称和描述不能为空！');
+                return;
+            }
+
+            const inventoryItem = {
+                id: Date.now(),
+                name: itemName,
+                description: itemDescription,
+                acquireTime: currentTime,
+                status: 'unused'
+            };
+
+            user.inventory.push(inventoryItem);
+            alert(`物品已添加到用户 ${username} 的背包`);
+        }
+
+        function removeItemFromInventory(username) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+
+            const user = users.find(u => u.username === username);
+            if (!user) {
+                alert('用户不存在！');
+                return;
+            }
+
+            const itemName = prompt('请输入要删除的物品名称：');
+            const item = user.inventory.find(i => i.name === itemName && i.status === 'unused');
+
+            if (!item) {
+                alert('未找到该未使用的物品，请检查名称是否正确');
+                return;
+            }
+
+            user.inventory = user.inventory.filter(i => i.id !== item.id);
+            alert(`物品 ${itemName} 已从用户 ${username} 的背包中删除`);
+        }
+
+        // 切换会员状态
+        function toggleMembership(username) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+
+            const user = users.find(u => u.username === username);
+            if (!user) {
+                alert('用户不存在！');
+                return;
+            }
+
+            user.membershipLevel = user.membershipLevel ? '' : '普通会员';
+            alert(`用户 ${username} 的会员状态已更新为：${user.membershipLevel ? user.membershipLevel : '非会员'}`);
+            updateUserList();
+        }
+
+        // 删除用户
+        function deleteUser(username) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+            
+            if (confirm(`确定要删除用户 ${username} 吗？`)) {
+                users = users.filter(u => u.username !== username);
+                updateUserList();
+                alert('用户删除成功！');
+            }
+        }
+
+        // 重置用户密码
+        function resetUserPassword(username) {
+            if (!currentUser?.isAdmin) {
+                alert('权限不足！');
+                return;
+            }
+
+            const newPassword = Math.random().toString(36).slice(-8);
+            const user = users.find(u => u.username === username);
+            if (user) {
+                user.password = newPassword;
+                alert(`用户 ${username} 的密码已重置为：${newPassword}`);
+            }
+        }
+
+        // 添加商品
+        function showAddProductForm() {
+            const name = prompt('商品名称：');
+            const description = prompt('商品描述：');
+            const points = parseInt(prompt('所需积分：'));
+            const stock = parseInt(prompt('库存数量：'));
+            
+            if (name && points && stock) {
+                const newProduct = {
+                    id: products.length + 1,
+                    name,
+                    description,
+                    points,
+                    stock,
+                    image: 'default.jpg'
+                };
+                
+                products.push(newProduct);
+                displayProducts();
+                updateProductsList();
+                alert('商品添加成功！');
+            }
+        }
+
+        // 编辑商品
+        function editProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+            
+            const name = prompt('商品名称：', product.name);
+            const description = prompt('商品描述：', product.description);
+            const points = parseInt(prompt('所需积分：', product.points));
+            const stock = parseInt(prompt('库存数量：', product.stock));
+            
+            if (name && points && stock) {
+                Object.assign(product, { name, description, points, stock });
+                displayProducts();
+                updateProductsList();
+                alert('商品更新成功！');
+            }
+        }
+
+        // 删除商品
+        function deleteProduct(productId) {
+            if (confirm('确定要删除这个商品吗？')) {
+                products = products.filter(p => p.id !== productId);
+                displayProducts();
+                updateProductsList();
+                alert('商品删除成功！');
+            }
+        }
+
+        // 导出数据
+        function exportData() {
+            const dataStr = JSON.stringify({ users, products, currentDiscount });
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+
+            const exportFileDefaultName = 'data.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileDefaultName);
+            linkElement.click();
+        }
+
+        // 导入数据
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = JSON.parse(e.target.result);
+                users = data.users;
+                products = data.products;
+                currentDiscount = data.currentDiscount;
+                alert('数据导入成功！');
+                updateUserList();
+                updateProductsList();
+            };
+            reader.readAsText(file);
+        }
+
+        // 更新导航栏
+        function updateNavigation() {
+            const adminBtn = document.getElementById('adminBtn');
+            const checkinBtn = document.getElementById('checkinBtn');
+            const shopBtn = document.getElementById('shopBtn');
+            const inventoryBtn = document.getElementById('inventoryBtn');
+            const profileBtn = document.getElementById('profileBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loginBtn = document.getElementById('loginBtn');
+            const registerBtn = document.getElementById('registerBtn');
+            const membershipBtn = document.getElementById('membershipBtn');
+
+            if (currentUser) {
+                loginBtn.style.display = 'none';
+                registerBtn.style.display = 'none';
+                logoutBtn.style.display = 'block';
+                checkinBtn.style.display = 'block';
+                shopBtn.style.display = 'block';
+                inventoryBtn.style.display = 'block';
+                profileBtn.style.display = 'block';
+                membershipBtn.style.display = 'block';
+
+                if (currentUser.isAdmin) {
+                    adminBtn.style.display = 'block';
+                } else {
+                    adminBtn.style.display = 'none';
+                }
+            } else {
+                loginBtn.style.display = 'block';
+                registerBtn.style.display = 'block';
+                logoutBtn.style.display = 'none';
+                checkinBtn.style.display = 'none';
+                shopBtn.style.display = 'none';
+                inventoryBtn.style.display = 'none';
+                profileBtn.style.display = 'none';
+                adminBtn.style.display = 'none';
+                membershipBtn.style.display = 'none';
+            }
+        }
+
+        // 更新时间显示
+        function updateTimeDisplay() {
+            document.getElementById('currentTime').textContent = `当前时间：${currentTime}`;
+            document.getElementById('currentUser').textContent = `当前用户：${currentUser ? currentUser.username : '未登录'}`;
+        }
+
+        // 更新签到状态
+        function updateCheckinStatus() {
+            if (!currentUser) {
+                document.getElementById('checkinStatus').textContent = '未登录';
+                document.getElementById('doCheckinBtn').disabled = true;
+                return;
+            }
+
+            const today = currentTime.split(' ')[0];
+            if (currentUser.checkins.includes(today)) {
+                document.getElementById('checkinStatus').textContent = '今日已签到';
+                document.getElementById('doCheckinBtn').disabled = true;
+            } else {
+                document.getElementById('checkinStatus').textContent = '今日未签到';
+                document.getElementById('doCheckinBtn').disabled = false;
+            }
+
+            updatePointsDisplay();
+            updatePointsHistory();
+        }
+
+        // 更新积分显示
+        function updatePointsDisplay() {
+            document.getElementById('currentPoints').textContent = `当前积分：${currentUser.points}`;
+        }
+
+        // 更新积分历史记录
+        function updatePointsHistory() {
+            const pointsHistory = document.getElementById('pointsHistory');
+            pointsHistory.innerHTML = '';
+
+            (currentUser.pointsHistory || []).slice(0, 10).forEach(record => {
+                const historyItem = document.createElement('div');
+                historyItem.className = 'points-history-item';
+                historyItem.textContent = `${record.date}：${record.message} ${record.points >= 0 ? '+' : ''}${record.points}积分`;
+                pointsHistory.appendChild(historyItem);
+            });
+        }
+
+        // 更新折扣显示
+        function updateDiscountDisplay() {
+            const discountInfo = document.getElementById('currentDiscount');
+            if (currentDiscount.rate < 100 && new Date(currentDiscount.endTime) > new Date()) {
+                discountInfo.textContent = `当前折扣：${currentDiscount.rate}% (有效期至 ${currentDiscount.endTime})`;
+            } else {
+                discountInfo.textContent = '';
+            }
+        }
+
+        // 更新用户信息
+        function updateUserInfo() {
+            if (!currentUser) return;
+
+            const userInfo = document.getElementById('userInfo');
+            userInfo.innerHTML = `
+                <p>用户名：${currentUser.username}</p>
+                <p>邮箱：${currentUser.email}</p>
+                <p>当前积分：${currentUser.points}</p>
+                <p>连续签到天数：${currentUser.streak}天</p>
+                <p>会员等级：${currentUser.membershipLevel || '非会员'}</p>
+                <p>会员权益：${getMembershipBenefits(currentUser.membershipLevel)}</p>
+            `;
+        }
+
+        // 获取会员权益
+        function getMembershipBenefits(level) {
+            switch (level) {
+                case '普通会员':
+                    return '每日签到额外 +5 积分';
+                case '黄金会员':
+                    return '每日签到额外 +10 积分，商城折扣 90%';
+                case '钻石会员':
+                    return '每日签到额外 +20 积分，商城折扣 80%，专属客服';
+                default:
+                    return '无';
+            }
+        }
+
+        // 更新连续签到天数
+        function updateStreak() {
+            const today = currentTime.split(' ')[0];
+            const yesterday = new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().split('T')[0];
+            if (currentUser.checkins.includes(yesterday)) {
+                currentUser.streak = (currentUser.streak || 0) + 1;
+            } else {
+                currentUser.streak = 1;
+            }
+        }
+
+        // 更新会员列表
+        function updateMembershipList() {
+            const membershipList = document.getElementById('membershipList');
+            membershipList.innerHTML = '';
+
+            users.filter(user => user.membershipLevel).forEach(user => {
+                const listItem = document.createElement('div');
+                listItem.className = 'membership-list-item';
+                listItem.textContent = `${user.username} (${user.email}) - ${user.membershipLevel}`;
+                membershipList.appendChild(listItem);
+            });
+        }
+
+        // 成为会员
+        function becomeMember(level, cost) {
+            if (!currentUser) {
+                alert('请先登录！');
+                return;
+            }
+
+            if (currentUser.membershipLevel) {
+                alert('您已经是会员了！');
+                return;
+            }
+
+            if (currentUser.points < cost) {
+                alert('您的积分不足，无法成为会员。');
+                return;
+            }
+
+            if (confirm(`确认要使用 ${cost} 积分成为 ${level} 吗？`)) {
+                currentUser.points -= cost;
+                currentUser.membershipLevel = level;
+                currentUser.pointsHistory.unshift({
+                    date: currentTime.split(' ')[0],
+                    points: -cost,
+                    type: '购买会员',
+                    message: `购买 ${level} 资格`
+                });
+                alert(`恭喜您成为 ${level}！`);
+                updateUserInfo();
+                updateMembershipList();
+                updatePointsDisplay();
+                updatePointsHistory();
+            }
+        }
+
+        // 注销功能
+        function logout() {
+            currentUser = null;
+            updateNavigation();
+            showPanel('login');
+            alert('已退出登录');
+        }
+    </script>
+</body>
+</html>
